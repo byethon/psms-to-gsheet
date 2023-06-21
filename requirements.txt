@@ -2,3 +2,4 @@ requests
 gspread
 pandas
 oauth2client
+jinja2
