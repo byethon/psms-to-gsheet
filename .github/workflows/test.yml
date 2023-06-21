@@ -17,10 +17,9 @@ jobs:
         with:
           python-version: '3.11' # install the python version needed
           
-      - name: install python packages
+      - name: load python env
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          source autopsd-venv/bin/activate
           
       - name: execute py script # run main.py
         env:
