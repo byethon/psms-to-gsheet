@@ -2,7 +2,7 @@ name: run pypsd-gs.py
 
 on:
   schedule:
-    - cron: '0,30 * * * *'
+    - cron: '0 * * * *'
 
 jobs:
   build:
