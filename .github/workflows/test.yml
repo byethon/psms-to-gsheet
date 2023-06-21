@@ -17,13 +17,6 @@ jobs:
         with:
           python-version: '3.11' # install the python version needed
           
-      - name: load python env
-        run: |
-          source autopsd-venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          which python
-          
       - name: execute py script # run main.py
         env:
           psdemail: ${{ secrets.PSDEMAIL }}
@@ -36,5 +29,5 @@ jobs:
           client_x509_cert_url: ${{ secrets.CLIENT_X509_CERT_URL }}
           sheetlink: ${{ secrets.SHEETLINK }}
         run: |
-          which python
+          source autopsd-venv/bin/activate
           python pypsd-gs.py
