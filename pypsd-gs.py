@@ -355,7 +355,7 @@ dataframe.style.format({"Last updated on": lambda t: t.strftime("%b  %d %Y  %H:%
 dataframe['Last updated on']=dataframe['Last updated on'].dt.strftime('%b %d %Y %H:%M%p')
 wb.sheet1.clear()
 curr_time=datetime.datetime.now()
-wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(minutes=40)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
+wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(minutes=30)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
 wb.sheet1.format("A2:G3",{'textFormat': {'bold': True}})
 wb.sheet1.freeze(rows=3)
 row_count=wb.sheet1.row_count
