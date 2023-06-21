@@ -22,6 +22,7 @@ jobs:
           source autopsd-venv/bin/activate
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          which python
           
       - name: execute py script # run main.py
         env:
@@ -34,17 +35,6 @@ jobs:
           client_id: ${{ secrets.CLIENT_ID }}
           client_x509_cert_url: ${{ secrets.CLIENT_X509_CERT_URL }}
           sheetlink: ${{ secrets.SHEETLINK }}
-        run: python pypsd-gs.py
-        
-      - name: commit files
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add -A
-          git diff-index --quiet HEAD || (git commit -a -m "updated files" --allow-empty)
-
-      - name: push changes
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main 
+          which python
+          python pypsd-gs.py
