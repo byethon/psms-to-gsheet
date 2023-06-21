@@ -27,7 +27,9 @@ class bcolors:
 try:
     psdemail=os.environ["psdemail"]
     psdpass=os.environ["psdpass"]
-    print(len(psdpass))
+    print(psdpass)
+    print(psdemail)
+    
 except:
     exit(f"{bcolors.FAIL}Input Email and Password as Environment Variables{bcolors.ENDC}")
 
