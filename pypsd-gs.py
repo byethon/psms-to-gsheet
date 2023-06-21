@@ -219,10 +219,8 @@ for j in range(len(jsonout)):
 print(f"\n{bcolors.OKBLUE}>{bcolors.ENDC}Fetching Project list...\n")
 headers.update({'Referer': station_fetch})
 fetchlist=[]
-k=0
+print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
 for entry in jsonout:
-    k=k+1
-    print(f"\033[A{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data {bcolors.OKBLUE}{round(k/len(jsonout)*100,2)}%{bcolors.ENDC} Done  ")
     payload3={
         'StationId':f'{entry[-2]}'
     }
@@ -293,9 +291,8 @@ TotalReqcol=[]
 Stripcol=[]
 Linkcol=[]
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching Project Sublists and Generating Output")
-print(f"\n{bcolors.OKGREEN}Recommended Projects{bcolors.ENDC}")
+print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
 for i in range(len(jsonout)):
-    print(f"\033[A{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data {bcolors.OKBLUE}{round((i+1)/len(jsonout)*100,2)}%{bcolors.ENDC} Done  ")
     try:
         [Sdomain,StationName]=jsonout[i][2].split('-',1)
     except:
