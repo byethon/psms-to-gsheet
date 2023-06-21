@@ -2,6 +2,7 @@ from sys import exit
 import time
 import datetime
 import os
+import pytz
 try:
     import requests
     import gspread
@@ -352,7 +353,7 @@ dataframe.sort_values(by='Last updated on',ascending=False, inplace=True)
 dataframe.style.format({"Last updated on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
 dataframe['Last updated on']=dataframe['Last updated on'].dt.strftime('%b %d %Y %H:%M%p')
 wb.sheet1.clear()
-curr_time=datetime.datetime.now()
+curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
 wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(minutes=30)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
 wb.sheet1.format("A2:G3",{'textFormat': {'bold': True}})
 wb.sheet1.freeze(rows=3)
