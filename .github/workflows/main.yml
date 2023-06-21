@@ -25,7 +25,7 @@ jobs:
       - name: execute py script # run main.py
         env:
           psdemail: ${{ secrets.PSDEMAIL }}
-          psdpass: ${{ secrets.PSDEMAIL }}
+          psdpass: ${{ secrets.PSDPASS }}
           project_id: ${{ secrets.PROJECT_ID }}
           private_key_id: ${{ secrets.PRIVATE_KEY_ID }}
           private_key: ${{ secrets.PRIVATE_KEY }}
