@@ -6,7 +6,6 @@ try:
     import requests
     import gspread
     import pandas as pd
-    from oauth2client.service_account import ServiceAccountCredentials
 except:
     print("Python Request module not available on this machine")
     print("Fatal Error: The program will now quit!")
@@ -36,7 +35,7 @@ try:
   "type": "service_account",
   "project_id": os.environ["project_id"],
   "private_key_id": os.environ["private_key_id"],
-  "private_key": os.environ["private_key"],
+  "private_key": os.environ["private_key"].replace('\\n','\n'),
   "client_email": os.environ["client_email"],
   "client_id": os.environ["client_id"],
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -329,11 +328,12 @@ for i in range(len(jsonout)):
         TotalReqcol.append(totalinterns)
         Stripcol.append(fetchlist[i][j][-5])
         Linkcol.append(f'=HYPERLINK("{uri[7:]}","View Details")')
-scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+scopes = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive'
+]
 
-creds = ServiceAccountCredentials.from_dict(credentials, scope)
-
-client = gspread.authorize(creds)
+client = gspread.service_account_from_dict(credentials,scopes=scopes)
 
 wb = client.open_by_url(sheetlink)
 
