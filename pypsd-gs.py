@@ -160,7 +160,7 @@ try:
 except:
     wb.sheet1.merge_cells("A1:G2",merge_type='MERGE_ROWS')
     curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
-    wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot']]+[[f'LOGIN DISABLED OR EXECUTION ERROR : Next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']],value_input_option="USER_ENTERED")
+    wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)']]+[[f'LOGIN DISABLED OR EXECUTION ERROR : Next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']],value_input_option="USER_ENTERED")
     wb.sheet1.format("A2:G3",{'textFormat': {'bold': True}})
     exit(f"{bcolors.FAIL}Check Email and Password{bcolors.ENDC}")
 
@@ -360,7 +360,7 @@ dataframe['Last updated on']=dataframe['Last updated on'].dt.strftime('%b %d %Y 
 wb.sheet1.clear()
 wb.sheet1.merge_cells("A1:G2",merge_type='MERGE_ROWS')
 curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
-wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
+wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
 wb.sheet1.format("A2:G3",{'textFormat': {'bold': True}})
 wb.sheet1.freeze(rows=3)
 row_count=wb.sheet1.row_count
