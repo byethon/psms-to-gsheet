@@ -62,4 +62,8 @@ Follow these steps:
 
 You can now run the workflow using github actions tab manually using 'test.yml' or it will anyways run every hour using 'main.yml'.      
 If there is a dependency error you can run 'generate environment' workflow to fix it otherwise there is no need to run it.
+You may have to enable write access to workflow actions to execute 'generate environment' workflow
+1. Go to settings tab in the repo.
+2. Open actions section from the left sidebar and select 'general'.
+3. Scroll down and enable write access in workflow permissions.
 
