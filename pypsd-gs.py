@@ -53,6 +53,15 @@ try:
 except:
     exit(f"{bcolors.FAIL}Error sheetlink from Environment Variables{bcolors.ENDC}")
 
+scopes = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive'
+]
+
+client = gspread.service_account_from_dict(credentials,scopes=scopes)
+
+wb = client.open_by_url(sheetlink)
+
 studentid=0
 
 projectlist='2023-2024 / SEM-I' #project list for which data will be fetched. Entire history is sent by the server thus has to be filtered
@@ -149,6 +158,10 @@ try:
             studentid=entry[-6:-1]
     print(f"{bcolors.OKGREEN}SUCCESS{bcolors.ENDC}\n")
 except:
+    wb.sheet1.merge_cells("A1:G2",merge_type='MERGE_ROWS')
+    curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+    wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot']]+[[f'LOGIN DISABLED OR EXECUTION ERROR : Next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']],value_input_option="USER_ENTERED")
+    wb.sheet1.format("A2:G3",{'textFormat': {'bold': True}})
     exit(f"{bcolors.FAIL}Check Email and Password{bcolors.ENDC}")
 
 get_req=ps.get(resp_url)
@@ -329,14 +342,6 @@ for i in range(len(jsonout)):
         TotalReqcol.append(totalinterns)
         Stripcol.append(fetchlist[i][j][-5])
         Linkcol.append(f'=HYPERLINK("{uri}","View Details")')
-scopes = [
-    'https://www.googleapis.com/auth/spreadsheets',
-    'https://www.googleapis.com/auth/drive'
-]
-
-client = gspread.service_account_from_dict(credentials,scopes=scopes)
-
-wb = client.open_by_url(sheetlink)
 
 dataset = {
   'Station': Stationcol,
