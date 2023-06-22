@@ -58,7 +58,7 @@ Follow these steps:
 3. Set up a new environment named 'Autopsd'.
 4. Open Configuration page for Environment Secrets by cliking on the environment name('Autopsd').
 5. Add all the required enviroment secrets by copying them from json file downloaded earlier, also add your psd password and email and the link for the sheet you created until it looks something like this-
-   ![secrets](/images/secrets.jpg)
+   ![secrets](./images/secrets.png)
 
 You can now run the workflow using github actions tab manually using 'test.yml' or it will anyways run every hour using 'main.yml'.      
 If there is a dependency error you can run 'generate environment' workflow to fix it otherwise there is no need to run it.
