@@ -328,7 +328,7 @@ for i in range(len(jsonout)):
         Eligcol.append(fetchlist[i][j][-6])
         TotalReqcol.append(totalinterns)
         Stripcol.append(fetchlist[i][j][-5])
-        Linkcol.append(f'=HYPERLINK("{uri[7:]}","View Details")')
+        Linkcol.append(f'=HYPERLINK("{uri}","View Details")')
 scopes = [
     'https://www.googleapis.com/auth/spreadsheets',
     'https://www.googleapis.com/auth/drive'
@@ -361,9 +361,9 @@ wb.sheet1.freeze(rows=3)
 row_count=wb.sheet1.row_count
 wb.sheet1.format(f"A1:G2", {"textFormat": {"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4}}})
 wb.sheet1.format(f"A4:A{row_count}", {"textFormat": {"foregroundColor": {"red": 0.6,"green": 0.0,"blue": 1.0}}})
-wb.sheet1.format(f"E4:E{row_count}", {"textFormat": {"foregroundColor": {"red": 0.2,"green": 0.66,"blue": 0.33}}})
-wb.sheet1.format(f"F4:F{row_count}", {"textFormat": {"foregroundColor": {"red": 0.07,"green": 0.34,"blue": 0.8}}})
-wb.sheet1.format(f"G4:G{row_count}", {"textFormat": {"foregroundColor": {"red": 1.0,"green": 0.43,"blue": 0.1}}})
+wb.sheet1.format(f"F4:F{row_count}", {"textFormat": {"foregroundColor": {"red": 0.2,"green": 0.66,"blue": 0.33}}})
+#wb.sheet1.format(f"F4:F{row_count}", {"textFormat": {"foregroundColor": {"red": 0.07,"green": 0.34,"blue": 0.8}}})
+wb.sheet1.format(f"E4:E{row_count}", {"textFormat": {"foregroundColor": {"red": 1.0,"green": 0.43,"blue": 0.1}}})
 wb.sheet1.format(f"C4:C{row_count}", {"textFormat": {"foregroundColor": {"red": 0.75,"green": 0.56,"blue": 0.0}}})
 print("Program executed Successfuly")
 
