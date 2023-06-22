@@ -163,8 +163,8 @@ except:
     curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
     wb.sheet1.update([['Writing Sheet Please Wait...']])
     wb.sheet1.update([['Sheet automatically updated using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)']]+[[f'LOGIN DISABLED OR EXECUTION ERROR : Next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']],value_input_option="USER_ENTERED")
-    wb.sheet1.format(f"A1:G1", {"textFormat": {'bold': True},{"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4}}})
-    wb.sheet1.format(f"A2:G2", {"textFormat": {'bold': True},{"foregroundColor": {"red": 0.92,"green": 0.26,"blue": 0.21}}})
+    wb.sheet1.format(f"A1:G1", {"textFormat": {{'bold': True},{"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4}}}})
+    wb.sheet1.format(f"A2:G2", {"textFormat": {{'bold': True},{"foregroundColor": {"red": 0.92,"green": 0.26,"blue": 0.21}}}})
     exit(f"{bcolors.FAIL}Check Email and Password{bcolors.ENDC}")
 
 get_req=ps.get(resp_url)
@@ -372,7 +372,7 @@ wb.sheet1.update([['Sheet automatically updated using Github Actions + pypsd_bot
 wb.sheet1.format("A3:G3",{'textFormat': {'bold': True}})
 wb.sheet1.freeze(rows=3)
 row_count=wb.sheet1.row_count
-wb.sheet1.format(f"A1:G2", {"textFormat": {'bold': True},{"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4}}})
+wb.sheet1.format(f"A1:G2", {"textFormat": {{'bold': True},{"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4}}}})
 wb.sheet1.format(f"A4:A{row_count}", {"textFormat": {"foregroundColor": {"red": 0.6,"green": 0.0,"blue": 1.0}}})
 wb.sheet1.format(f"F4:F{row_count}", {"textFormat": {"foregroundColor": {"red": 0.2,"green": 0.66,"blue": 0.33}}})
 #wb.sheet1.format(f"F4:F{row_count}", {"textFormat": {"foregroundColor": {"red": 0.07,"green": 0.34,"blue": 0.8}}})
