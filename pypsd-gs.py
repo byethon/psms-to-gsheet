@@ -145,6 +145,7 @@ headers={
     'Referer': 'http://psd.bits-pilani.ac.in/Student/StudentStationPreference.aspx'
 }
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Logging in...")
+wb.sheet1.update([['Logging in Please Wait...']])
 post_req=ps.post(url,data=payload)
 outhtml=post_req.text.splitlines()
 
@@ -160,8 +161,10 @@ try:
 except:
     wb.sheet1.merge_cells("A1:G2",merge_type='MERGE_ROWS')
     curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+    wb.sheet1.update([['Writing Sheet Please Wait...']])
     wb.sheet1.update([['Sheet automatically updated using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)']]+[[f'LOGIN DISABLED OR EXECUTION ERROR : Next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']],value_input_option="USER_ENTERED")
     wb.sheet1.format("A2:G3",{'textFormat': {'bold': True}})
+    wb.sheet1.format(f"A1:G2", {"textFormat": {"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4}}})
     exit(f"{bcolors.FAIL}Check Email and Password{bcolors.ENDC}")
 
 get_req=ps.get(resp_url)
@@ -255,6 +258,7 @@ for entry in jsonout:
 
 print(f"{bcolors.OKGREEN}RECIEVED{bcolors.ENDC}\n")
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Filtering for incomplete data and Stripend Constraints")
+wb.sheet1.update([['Filtering for incomplete/broken data and Past Semester Data...']])
 print(f"{bcolors.FAIL}ALSO REMOVING PAST SEMESTER DATA{bcolors.ENDC}")
 pop_arroext=[]
 for i in range(len(fetchlist)):
