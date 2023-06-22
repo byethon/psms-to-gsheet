@@ -160,7 +160,7 @@ try:
 except:
     wb.sheet1.merge_cells("A1:G2",merge_type='MERGE_ROWS')
     curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
-    wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)']]+[[f'LOGIN DISABLED OR EXECUTION ERROR : Next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']],value_input_option="USER_ENTERED")
+    wb.sheet1.update([['Sheet automatically updated using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)']]+[[f'LOGIN DISABLED OR EXECUTION ERROR : Next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']],value_input_option="USER_ENTERED")
     wb.sheet1.format("A2:G3",{'textFormat': {'bold': True}})
     exit(f"{bcolors.FAIL}Check Email and Password{bcolors.ENDC}")
 
@@ -168,6 +168,7 @@ get_req=ps.get(resp_url)
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Getting Dashboard...")
 get_req=ps.get(resp_url2)
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Getting Station List....")
+wb.sheet1.update([['Getting Station List...']])
 post_req=ps.post(resp_url2+'/getinfoStation',headers=headers,json=payload2)
 
 if(post_req.status_code==404):
@@ -233,6 +234,7 @@ print(f"\n{bcolors.OKBLUE}>{bcolors.ENDC}Fetching Project list...\n")
 headers.update({'Referer': station_fetch})
 fetchlist=[]
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
+wb.sheet1.update([['Fetching Project list...']])
 for entry in jsonout:
     payload3={
         'StationId':f'{entry[-2]}'
@@ -305,6 +307,7 @@ Stripcol=[]
 Linkcol=[]
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching Project Sublists and Generating Output")
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
+wb.sheet1.update([['Fetching Project details and Generating Output...']])
 for i in range(len(jsonout)):
     try:
         [Sdomain,StationName]=jsonout[i][2].split('-',1)
@@ -358,9 +361,10 @@ dataframe.sort_values(by='Last updated on',ascending=False, inplace=True)
 dataframe.style.format({"Last updated on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
 dataframe['Last updated on']=dataframe['Last updated on'].dt.strftime('%b %d %Y %H:%M%p')
 wb.sheet1.clear()
+wb.sheet1.update([['Writing Sheet Please Wait...']])
 wb.sheet1.merge_cells("A1:G2",merge_type='MERGE_ROWS')
 curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
-wb.sheet1.update([['Sheet updates automatically using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
+wb.sheet1.update([['Sheet automatically updated using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
 wb.sheet1.format("A2:G3",{'textFormat': {'bold': True}})
 wb.sheet1.freeze(rows=3)
 row_count=wb.sheet1.row_count
