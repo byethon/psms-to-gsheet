@@ -159,9 +159,9 @@ try:
             studentid=entry[-6:-1]
     print(f"{bcolors.OKGREEN}SUCCESS{bcolors.ENDC}\n")
 except:
-    wb.sheet1.merge_cells("A1:G2",merge_type='MERGE_ROWS')
-    wb.sheet1.format(f"A1:G1", {"textFormat": {"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4},'bold': True, 'underline': False}})
-    wb.sheet1.format(f"A2:G2", {"textFormat": {"foregroundColor": {"red": 0.92,"green": 0.26,"blue": 0.21},'bold': True}})
+    wb.sheet1.merge_cells("A1:H2",merge_type='MERGE_ROWS')
+    wb.sheet1.format(f"A1:H1", {"textFormat": {"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4},'bold': True, 'underline': False}})
+    wb.sheet1.format(f"A2:H2", {"textFormat": {"foregroundColor": {"red": 0.92,"green": 0.26,"blue": 0.21},'bold': True}})
     curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
     wb.sheet1.update([['Writing Sheet Please Wait...']])
     wb.sheet1.update([['=HYPERLINK("github.com/byethon/psms-to-gsheet","Sheet automatically updated using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)")']]+[[f'LOGIN DISABLED OR EXECUTION ERROR : Next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']],value_input_option="USER_ENTERED")
@@ -304,6 +304,7 @@ payload4={"batchid": "undefined"}
 
 Stationcol=[]
 Domcol=[]
+Loccol=[]
 Lupdcol=[]
 Eligcol=[]
 TotalReqcol=[]
@@ -317,6 +318,11 @@ for i in range(len(jsonout)):
         [Sdomain,StationName]=jsonout[i][2].split('-',1)
     except:
         [Sdomain,StationName]=['-',jsonout[j][2]]
+    [StationName,location]=StationName.rsplit(',',1)
+    StationName=StationName.strip()
+    Sdomain=Sdomain.strip()
+    location=location.strip()
+    Loccol.append(location)
     Stationcol.append(StationName)
     Domcol.append(Sdomain)
     for j in range(len(fetchlist[i])):
@@ -352,6 +358,7 @@ for i in range(len(jsonout)):
 
 dataset = {
   'Station': Stationcol,
+  'Location': Loccol,
   'Domain': Domcol,
   'Last updated on':Lupdcol,
   'Eligibility':Eligcol,
@@ -366,16 +373,17 @@ dataframe.sort_values(by='Last updated on',ascending=False, inplace=True)
 dataframe.style.format({"Last updated on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
 dataframe['Last updated on']=dataframe['Last updated on'].dt.strftime('%b %d %Y %H:%M%p')
 wb.sheet1.clear()
-wb.sheet1.merge_cells("A1:G2",merge_type='MERGE_ROWS')
-wb.sheet1.format(f"A1:G2", {"textFormat": {"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4},'bold': True, 'underline': False}})
-wb.sheet1.format("A3:G3",{'textFormat': {'bold': True}})
+wb.sheet1.merge_cells("A1:H2",merge_type='MERGE_ROWS')
+wb.sheet1.format(f"A1:H2", {"textFormat": {"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4},'bold': True, 'underline': False}})
+wb.sheet1.format("A3:H3",{'textFormat': {'bold': True}})
 wb.sheet1.update([['Writing Sheet Please Wait...']])
 wb.sheet1.freeze(rows=3)
 wb.sheet1.format(f"A4:A{row_count}", {"textFormat": {"foregroundColor": {"red": 0.6,"green": 0.0,"blue": 1.0},'bold': True}})
-wb.sheet1.format(f"F4:F{row_count}", {"textFormat": {"foregroundColor": {"red": 0.2,"green": 0.66,"blue": 0.33},'bold': True}})
-wb.sheet1.format(f"G4:G{row_count}", {"textFormat": {"foregroundColor": {"red": 1.0,"green": 0.43,"blue": 0.1}}})
-wb.sheet1.format(f"E4:E{row_count}", {"textFormat": {"foregroundColor": {"red": 1.0,"green": 0.43,"blue": 0.1},'bold': True}})
-wb.sheet1.format(f"C4:C{row_count}", {"textFormat": {"foregroundColor": {"red": 0.75,"green": 0.56,"blue": 0.0},'bold': True}})
+wb.sheet1.format(f"G4:G{row_count}", {"textFormat": {"foregroundColor": {"red": 0.2,"green": 0.66,"blue": 0.33},'bold': True}})
+wb.sheet1.format(f"C4:C{row_count}", {"textFormat": {"foregroundColor": {"red": 0.22,"green": 0.46,"blue": 0.11},'bold': True}})
+wb.sheet1.format(f"H4:H{row_count}", {"textFormat": {"foregroundColor": {"red": 1.0,"green": 0.43,"blue": 0.1}}})
+wb.sheet1.format(f"F4:F{row_count}", {"textFormat": {"foregroundColor": {"red": 1.0,"green": 0.43,"blue": 0.1},'bold': True}})
+wb.sheet1.format(f"D4:D{row_count}", {"textFormat": {"foregroundColor": {"red": 0.75,"green": 0.56,"blue": 0.0},'bold': True}})
 curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
 wb.sheet1.update([['=HYPERLINK("github.com/byethon/psms-to-gsheet","Sheet automatically updated using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)")']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
 print("Program executed Successfuly")
