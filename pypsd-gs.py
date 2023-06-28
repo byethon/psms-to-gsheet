@@ -349,7 +349,9 @@ for i in range(len(jsonout)):
         for k in range(len(pbout)):
             valid=False
             totalinterns=totalinterns+int(pbout[k][1])
-            last_updated=pbout[k][-4]
+            pbout[k][-4]=datetime.datetime.strptime(pbout[k][-4], '%b  %d %Y  %H:%M%p')
+            if(k==0 or pbout[k][-4]>last_updated):
+                last_updated=pbout[k][-4]
         Lupdcol.append(last_updated)
         Eligcol.append(fetchlist[i][j][-6])
         TotalReqcol.append(totalinterns)
@@ -371,7 +373,6 @@ str_list = list(filter(None, wb.sheet1.col_values(1)))
 last_row=len(str_list)
 last_col='H'
 dataframe=pd.DataFrame(dataset)
-dataframe['Last updated on']=pd.to_datetime(dataframe['Last updated on'], format='%b  %d %Y  %H:%M%p')
 dataframe.sort_values(by='Last updated on',ascending=False, inplace=True)
 dataframe.style.format({"Last updated on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
 dataframe['Last updated on']=dataframe['Last updated on'].dt.strftime('%b %d %Y %H:%M%p')
