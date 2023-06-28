@@ -367,8 +367,8 @@ dataset = {
   'Station': Stationcol,
   'Location': Loccol,
   'Domain': Domcol,
-  'Last updated on':Lupdcol,
   'Company Added on':Addcol,
+  'Last updated on':Lupdcol,
   'Eligibility':Eligcol,
   'Total Req. Interns':TotalReqcol,
   'Stripend':Stripcol,
@@ -394,12 +394,12 @@ wb.sheet1.freeze(rows=3)
 wb.sheet1.format(f"A4:A{row_count}", {"textFormat": {"foregroundColor": {"red": 0.6,"green": 0.0,"blue": 1.0},'bold': True}})
 wb.sheet1.format(f"B4:B{row_count}", {"textFormat": {"foregroundColor": {"red": 0.0,"green": 0.0,"blue": 0.0}}})
 wb.sheet1.format(f"C4:C{row_count}", {"textFormat": {"foregroundColor": {"red": 0.22,"green": 0.46,"blue": 0.11},'bold': True}})
-wb.sheet1.format(f"D4:B{row_count}", {"textFormat": {"foregroundColor": {"red": 0.92,"green": 0.26,"blue": 0.21},'bold': True}})
-wb.sheet1.format(f"E4:D{row_count}", {"textFormat": {"foregroundColor": {"red": 0.75,"green": 0.56,"blue": 0.0},'bold': True}})
-wb.sheet1.format(f"F4:E{row_count}", {"textFormat": {"foregroundColor": {"red": 0.0,"green": 0.0,"blue": 0.0}}})
-wb.sheet1.format(f"G4:F{row_count}", {"textFormat": {"foregroundColor": {"red": 0.2,"green": 0.66,"blue": 0.33},'bold': True}})
-wb.sheet1.format(f"H4:G{row_count}", {"textFormat": {"foregroundColor": {"red": 0.07,"green": 0.34,"blue": 0.8},'bold': True}})
-wb.sheet1.format(f"I4:H{row_count}", {"textFormat": {"foregroundColor": {"red": 1.0,"green": 0.43,"blue": 0.1}}})
+wb.sheet1.format(f"D4:D{row_count}", {"textFormat": {"foregroundColor": {"red": 0.92,"green": 0.26,"blue": 0.21},'bold': True}})
+wb.sheet1.format(f"E4:E{row_count}", {"textFormat": {"foregroundColor": {"red": 0.75,"green": 0.56,"blue": 0.0},'bold': True}})
+wb.sheet1.format(f"F4:F{row_count}", {"textFormat": {"foregroundColor": {"red": 0.0,"green": 0.0,"blue": 0.0}}})
+wb.sheet1.format(f"G4:G{row_count}", {"textFormat": {"foregroundColor": {"red": 0.2,"green": 0.66,"blue": 0.33},'bold': True}})
+wb.sheet1.format(f"H4:H{row_count}", {"textFormat": {"foregroundColor": {"red": 0.07,"green": 0.34,"blue": 0.8},'bold': True}})
+wb.sheet1.format(f"I4:I{row_count}", {"textFormat": {"foregroundColor": {"red": 1.0,"green": 0.43,"blue": 0.1}}})
 curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
 wb.sheet1.update([['=HYPERLINK("github.com/byethon/psms-to-gsheet","Sheet automatically updated using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)")']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
 print("Program executed Successfuly")
