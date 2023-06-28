@@ -367,12 +367,16 @@ dataset = {
   'Link':Linkcol
 }
 row_count=len(Stationcol)+3
+str_list = list(filter(None, wb.sheet1.col_values(1)))
+last_row=len(str_list)
+last_col='H'
 dataframe=pd.DataFrame(dataset)
 dataframe['Last updated on']=pd.to_datetime(dataframe['Last updated on'], format='%b  %d %Y  %H:%M%p')
 dataframe.sort_values(by='Last updated on',ascending=False, inplace=True)
 dataframe.style.format({"Last updated on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
 dataframe['Last updated on']=dataframe['Last updated on'].dt.strftime('%b %d %Y %H:%M%p')
-wb.sheet1.clear()
+if(last_row>row_count):
+    wb.sheet1.batch_clear([f'A{row_count+1}:{last_col}{last_row}'])
 wb.sheet1.merge_cells("A1:H2",merge_type='MERGE_ROWS')
 wb.sheet1.format(f"A1:H2", {"textFormat": {"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4},'bold': True, 'underline': False}})
 wb.sheet1.format("A3:H3",{'textFormat': {'bold': True}})
