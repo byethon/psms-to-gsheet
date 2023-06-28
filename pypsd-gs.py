@@ -382,6 +382,8 @@ dataframe=pd.DataFrame(dataset)
 dataframe.sort_values(by='Last updated on',ascending=False, inplace=True)
 dataframe.style.format({"Last updated on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
 dataframe['Last updated on']=dataframe['Last updated on'].dt.strftime('%b %d %Y %H:%M%p')
+dataframe.style.format({"Company Added on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
+dataframe['Company Added on']=dataframe['Company Added on'].dt.strftime('%b %d %Y %H:%M%p')
 if(last_row>row_count):
     wb.sheet1.batch_clear([f'A{row_count+1}:{last_col}{last_row}'])
 wb.sheet1.merge_cells("A1:I2",merge_type='MERGE_ROWS')
