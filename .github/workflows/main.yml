@@ -1,4 +1,4 @@
-name: run pypsd-gs.py
+name: Auto-exec
 
 on:
   schedule:
