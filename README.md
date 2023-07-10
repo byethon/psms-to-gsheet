@@ -31,7 +31,7 @@ You will automatically download a JSON file with credentials. It may look like t
 ```
 Let's create a spreadsheet to write to now.
 1. Go to google sheet create a new spreadsheet.
-2. Make sure the it has a sheet named 'Sheet1' in it, the program is hard coded to write to it.
+2. Make sure the workbook has at least one sheet in it, the program is hard coded to write to the first sheet that exists in a workbook.
 3. Share the sheet with editor access to the 'client-email' you got in the json file.
 4. Note down the file link and edit the end to remove any suffix. i.e.
    if the url is https://docs.google.com/spreadsheets/d/1MF.........Fgqd3DgYt_8s/edit#gid=882806501       
