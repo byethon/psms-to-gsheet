@@ -60,7 +60,7 @@ Follow these steps:
 5. Add all the required enviroment secrets by copying them from json file downloaded earlier, also add your psd password and email and the link for the sheet you created until it looks something like this-
    ![secrets](./images/secrets.png)
 
-You can now run the workflow using github actions tab manually using 'test.yml' or it will anyways run every hour using 'main.yml'.      
+You can now run the workflow using github actions tab manually using 'Manaul-exec' action present in the'test.yml' workflow or it will anyways run every hour using the 'Auto-exec' action present in the 'main.yml' workflow.      
 If there is a dependency error you can run 'generate environment' workflow to fix it otherwise there is no need to run it.
 You may have to enable write access to workflow actions to execute 'generate environment' workflow
 1. Go to settings tab in the repo.
