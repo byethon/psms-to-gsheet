@@ -64,7 +64,7 @@ wb = client.open_by_url(sheetlink)
 
 studentid=0
 
-projectlist='2023-2024 / SEM-I' #project list for which data will be fetched. Entire history is sent by the server thus has to be filtered
+projectlist=''           #'2023-2024 / SEM-I' #project list for which data will be fetched. Entire history is sent by the server thus has to be filtered
 
 if (platform()[0:7]=="Windows"):
     import ctypes
