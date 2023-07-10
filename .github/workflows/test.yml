@@ -1,4 +1,4 @@
-name: run pypsd-gs.py
+name: Manual-exec
 
 on:
   workflow_dispatch:
