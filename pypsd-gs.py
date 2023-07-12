@@ -238,11 +238,25 @@ headers.update({'Referer': station_fetch})
 fetchlist=[]
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
 wb.sheet1.update([['Fetching Project list...']])
-for entry in jsonout:
+pop_arroext=[]
+for j in range(len(jsonout)):
     payload3={
-        'StationId':f'{entry[-2]}'
+        'StationId':f'{jsonout[j][-2]}'
     }
-    post_req=ps.post(station_fetch+'/getPBPOPUP',headers=headers,json=payload3)
+    Errorcount=0
+    while(Errorcount>=0 and Errorcount<5):
+        try:
+            post_req=ps.post(station_fetch+'/getPBPOPUP',headers=headers,json=payload3)
+            Errorcount=-1
+        except:
+            print(f"Error Encountered Retrieving data for Station Id {jsonout[j][-2]}")
+            Errorcount+=1
+            if(Errorcount<5):
+                print("Retrying...")
+    if(Errorcount>=5):
+        print(f"Error Encountered Retrieving data for Station Id {jsonout[j][-2]}, Skipping")
+        pop_arrext.append(j)
+        break
     fetchlist.append(re.sub('\\\\"','',post_req.text[8:-4]))
     fetchlist[-1]=fetchlist[-1].split('},{')
     for i in range(len(fetchlist[-1])):
@@ -255,6 +269,10 @@ for entry in jsonout:
             else:
                 temp[-1]=temp[-1]+','+subentry.rstrip()
         fetchlist[-1][i]=temp
+
+pop_arroext.reverse()
+for entry in pop_arroext:
+    jsonout.pop(entry)
 
 print(f"{bcolors.OKGREEN}RECIEVED{bcolors.ENDC}\n")
 print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Filtering for incomplete data and Stripend Constraints")
@@ -329,8 +347,20 @@ for i in range(len(jsonout)):
     for j in range(len(fetchlist[i])):
         uri=fetchlist[i][j][-1]
         headers.update({'Referer': uri})
-        post_req=ps.get(uri)
-        post_req=ps.post(pb_details+'/ViewPB',headers=headers,json=payload4)
+        Errorcount=0
+        while(Errorcount>=0 and Errorcount<5):
+            try:
+                post_req=ps.get(uri)
+                post_req=ps.post(pb_details+'/ViewPB',headers=headers,json=payload4)
+                Errorcount=-1
+            except:
+                print(f"Error Encountered Retrieving data for {StationName}")
+                Errorcount+=1
+                if(Errorcount<5):
+                    print("Retrying...")
+        if(Errorcount>=5):
+            print(f"Error Encountered Retrieving data for Station Id {entry[-2]}, Skipping")
+            break
         pbout=post_req.text[8:-3]
         pbout=pbout.split('},{')
         for k in range(len(pbout)):
