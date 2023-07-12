@@ -255,7 +255,7 @@ for j in range(len(jsonout)):
                 print("Retrying...")
     if(Errorcount>=5):
         print(f"Error Encountered Retrieving data for Station Id {jsonout[j][-2]}, Skipping")
-        pop_arrext.append(j)
+        pop_arroext.append(j)
         break
     fetchlist.append(re.sub('\\\\"','',post_req.text[8:-4]))
     fetchlist[-1]=fetchlist[-1].split('},{')
