@@ -2,7 +2,7 @@ name: Auto-exec
 
 on:
   schedule:
-    - cron: '*/24 * * * *'
+    - cron: '*/30 * * * *'
 
 jobs:
   build:
