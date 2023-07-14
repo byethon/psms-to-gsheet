@@ -17,7 +17,7 @@ except:
     print("Fatal Error: The program will now quit!")
     exit()
 
-REQUEST_THREADS=8 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
+REQUEST_THREADS=1 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
 RETRY_COUNT=5
 
 class bcolors:
