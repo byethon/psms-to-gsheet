@@ -17,7 +17,7 @@ except:
     print("Fatal Error: The program will now quit!")
     exit()
 
-REQUEST_THREADS=1 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
+REQUEST_THREADS=6 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
 RETRY_COUNT=5
 
 class bcolors:
@@ -28,6 +28,68 @@ class bcolors:
     INFOYELLOW = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
+
+try:
+    psdemail=os.environ["psdemail"]
+    psdpass=os.environ["psdpass"]
+        
+except:
+    exit(f"{bcolors.FAIL}Input Email and Password as Environment Variables{bcolors.ENDC}")
+
+def gen_login_session():
+    ps=requests.Session()
+    resp_get=ps.get(url)
+    outhtml = resp_get.text.splitlines()
+    test=0
+    print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Getting Validation token...")
+    formelement=[]
+    for line in outhtml:
+        if (line.find('<form')>0):
+            test=test+1
+        if test>0:
+            formelement.append(line)
+        if (line.find('</form')>0):
+            test=test-1
+
+    inputelement=[]
+    for line in formelement:
+        if (line.find('VIEWSTATE')>0):
+            inputelement.append(line)
+        if (line.find('EVENTVALIDATION')>0):
+            inputelement.append(line)
+
+    for i in range(len(inputelement)):
+        inputelement[i]=inputelement[i].split(' ')
+        for entry in inputelement[i]:
+            if (len(entry)>5 and entry[0:5]=='value'):
+                inputelement[i]=entry[7:-1]
+
+    payload = {
+        '__EVENTTARGET':"",
+        '__EVENTARGUMENT':"",
+        '__VIEWSTATE':inputelement[0],
+        '__VIEWSTATEGENERATOR':inputelement[1],
+        '__EVENTVALIDATION':inputelement[2],
+        'TxtEmail': psdemail,
+        'txtPass': psdpass,
+        'Button1':"Login",
+        'txtEmailid':""
+    }
+    post_req=ps.post(url,data=payload)
+    outhtml=post_req.text.splitlines()
+
+    for line in outhtml:
+        if (line.find('StudentId')>0):
+            studentid=line.split(' ')
+
+    try:
+        for entry in studentid:
+            if (entry[-16:-7]=='StudentId'):
+                studentid=entry[-6:-1]
+        print(f"{bcolors.OKGREEN}SUCCESS{bcolors.ENDC}\n")
+    except:
+        print("Login Error")
+    return ps
 
 def token_gen():
     curr_millis=int(time.time()*1000)
@@ -54,7 +116,7 @@ async def detail_collector(cookies,url,headers,Stationlist,resp_list):
         resp_list.extend(orig_resp)
         
         
-def detail_fetchv2(requests_session,Stationlist,url,headers):
+def detail_fetchv2(requests_session,Stationlist,url,headers,queue):
     cookies=requests_session.cookies.get_dict()
     Proj_list=[]
     resp_list=[]
@@ -73,7 +135,7 @@ def detail_fetchv2(requests_session,Stationlist,url,headers):
                     temp[-1]=temp[-1]+','+subentry.rstrip()
             Proj_list[-1][i]=temp
     
-    return Proj_list
+    queue.put(Proj_list)
 
 def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,queue):
     Stationcol=[]
@@ -107,12 +169,12 @@ def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,q
                     post_req=request_session.post(fetch_url+'/ViewPB',headers=headers,json=payload)
                     Errorcount=-1
                 except:
-                    print(f"Error Encountered Retrieving data for {Sdomain.rstrip()}-{StationName}")
+                    print(f"{bcolors.FAIL}>{bcolors.ENDC}Error Encountered Retrieving data for {Sdomain.rstrip()}-{StationName}")
                     Errorcount+=1
                     if(Errorcount<RETRY_COUNT):
                         print("Retrying...")
             if(Errorcount>=RETRY_COUNT):
-                print(f"Error Encountered Retrieving data for Station {Sdomain.rstrip()}-{StationName}, Skipping")
+                print(f"{bcolors.FAIL}>{bcolors.ENDC}Error Encountered Retrieving data for Station {Sdomain.rstrip()}-{StationName}, Skipping")
                 break
             print(f'{bcolors.INFOYELLOW}>{bcolors.ENDC}{Sdomain.rstrip()}-{StationName}')
             pbout=post_req.text[8:-3]
@@ -149,12 +211,6 @@ def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,q
 
 if __name__=='__main__':
     set_start_method("spawn")
-    try:
-        psdemail=os.environ["psdemail"]
-        psdpass=os.environ["psdpass"]
-        
-    except:
-        exit(f"{bcolors.FAIL}Input Email and Password as Environment Variables{bcolors.ENDC}")
 
     try:
         credentials={
@@ -208,45 +264,6 @@ if __name__=='__main__':
 
     pb_details='http://psd.bits-pilani.ac.in/Student/StationproblemBankDetails.aspx'
 
-    ps=requests.Session()
-    resp_get=ps.get(url)
-    outhtml = resp_get.text.splitlines()
-    test=0
-    print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Getting Validation token...")
-    formelement=[]
-    for line in outhtml:
-        if (line.find('<form')>0):
-            test=test+1
-        if test>0:
-            formelement.append(line)
-        if (line.find('</form')>0):
-            test=test-1
-
-    inputelement=[]
-    for line in formelement:
-        if (line.find('VIEWSTATE')>0):
-            inputelement.append(line)
-        if (line.find('EVENTVALIDATION')>0):
-            inputelement.append(line)
-    inval=[]
-    for i in range(len(inputelement)):
-        inputelement[i]=inputelement[i].split(' ')
-        for entry in inputelement[i]:
-            if (len(entry)>5 and entry[0:5]=='value'):
-                inputelement[i]=entry[7:-1]
-
-    payload = {
-        '__EVENTTARGET':"",
-        '__EVENTARGUMENT':"",
-        '__VIEWSTATE':inputelement[0],
-        '__VIEWSTATEGENERATOR':inputelement[1],
-        '__EVENTVALIDATION':inputelement[2],
-        'TxtEmail': psdemail,
-        'txtPass': psdpass,
-        'Button1':"Login",
-        'txtEmailid':""
-    }
-
     payload2 ={'CompanyId':"0"}
 
     headers={
@@ -263,26 +280,8 @@ if __name__=='__main__':
     }
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Logging in...")
     wb.sheet1.update([['Logging in Please Wait...']])
-    post_req=ps.post(url,data=payload)
-    outhtml=post_req.text.splitlines()
-
-    for line in outhtml:
-        if (line.find('StudentId')>0):
-            studentid=line.split(' ')
-
-    try:
-        for entry in studentid:
-            if (entry[-16:-7]=='StudentId'):
-                studentid=entry[-6:-1]
-        print(f"{bcolors.OKGREEN}SUCCESS{bcolors.ENDC}\n")
-    except:
-        wb.sheet1.merge_cells("A1:I2",merge_type='MERGE_ROWS')
-        wb.sheet1.format(f"A1:I1", {"textFormat": {"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4},'bold': True, 'underline': False}})
-        wb.sheet1.format(f"A2:I2", {"textFormat": {"foregroundColor": {"red": 0.92,"green": 0.26,"blue": 0.21},'bold': True}})
-        curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
-        wb.sheet1.update([['Writing Sheet Please Wait...']])
-        wb.sheet1.update([['=HYPERLINK("github.com/byethon/psms-to-gsheet","Sheet automatically updated using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)")']]+[[f'LOGIN DISABLED OR EXECUTION ERROR : Next update at {(curr_time+datetime.timedelta(hours=1)).strftime("%b %d %Y %H:%M%p")}']],value_input_option="USER_ENTERED")
-        exit(f"{bcolors.FAIL}Check Email and Password{bcolors.ENDC}")
+    
+    ps=gen_login_session()
 
     get_req=ps.get(resp_url)
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Getting Dashboard...")
@@ -346,10 +345,34 @@ if __name__=='__main__':
     print(f"\n{bcolors.OKBLUE}>{bcolors.ENDC}Fetching Project list...\n")
     headers.update({'Referer': station_fetch})
 
-    print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
     wb.sheet1.update([['Fetching Project list...']])
 
-    fetchlist=detail_fetchv2(ps,jsonout,station_fetch,headers)
+    print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Invoking {REQUEST_THREADS}x Parallel request threads...")
+    print(f"{bcolors.FAIL}WARNING:{bcolors.ENDC}Too many threads may cause the server to disconnect!")
+
+    login_arr=[]
+    login_arr.append(ps)
+    for k in range(REQUEST_THREADS-1):
+        login_arr.append(gen_login_session())
+
+    print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
+
+    q1=Queue()
+    Stationlist=[]
+    for k in range(REQUEST_THREADS):
+        Stationlist.append([])
+    for z in range(len(jsonout)):
+        Stationlist[z%REQUEST_THREADS].append(jsonout[z])
+
+    fetchlist=[]
+    p=[]
+
+    for k in range(REQUEST_THREADS):
+            p.append(Process(target = detail_fetchv2,args=(login_arr[k],Stationlist[k],station_fetch,headers,q1)))
+            p[k].start()
+    for k in range(REQUEST_THREADS):
+        Req_out=q1.get()
+        fetchlist=fetchlist+Req_out
 
     print(f"{bcolors.OKGREEN}RECIEVED{bcolors.ENDC}\n")
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Filtering for incomplete data and Stripend Constraints")
@@ -422,7 +445,7 @@ if __name__=='__main__':
 
     p=[]
     for k in range(REQUEST_THREADS):
-            p.append(Process(target = proj_fetch,args=(ps,Stationlist[k],Proj_list[k],pb_details,headers,payload4,q1)))
+            p.append(Process(target = proj_fetch,args=(login_arr[k],Stationlist[k],Proj_list[k],pb_details,headers,payload4,q1)))
             p[k].start()
     for k in range(REQUEST_THREADS):
         Req_out=q1.get()
