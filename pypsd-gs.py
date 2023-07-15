@@ -1,18 +1,23 @@
+from sys import exit
+import time
+import datetime
+import os
+import re
+from multiprocessing import Process,Queue,set_start_method
+from platform import platform
+env_file = os.getenv('GITHUB_ENV')
 try:
-    from sys import exit
-    import time
-    import datetime
-    import os
     import pytz
     import requests
     import gspread
     import pandas as pd
     import aiohttp
     import asyncio
-    import re
-    from multiprocessing import Process,Queue,set_start_method
-    from platform import platform
+    with open(env_file, "a") as myfile:
+    myfile.write("RETRY_PY=0")
 except:
+    with open(env_file, "a") as myfile:
+    myfile.write("RETRY_PY=1")
     print("All required modules not available on this machine")
     print("Fatal Error: The program will now quit!")
     exit()
