@@ -15,7 +15,7 @@ try:
     import asyncio
 except:
     with open(env_file, "a") as myfile:
-    myfile.write("RETRY_PY=1")
+        myfile.write("RETRY_PY=1")
     print("All required modules not available on this machine")
     print("Fatal Error: The program will now quit!")
     exit()
