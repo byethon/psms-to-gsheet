@@ -20,7 +20,7 @@ except:
     print("Fatal Error: The program will now quit!")
     exit("Retrying...")
 
-REQUEST_THREADS=6 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
+REQUEST_THREADS=8 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
 RETRY_COUNT=5
 
 class bcolors:
@@ -138,7 +138,7 @@ def detail_fetchv2(requests_session,Stationlist,url,headers,queue):
                     temp[-1]=temp[-1]+','+subentry.rstrip()
             Proj_list[-1][i]=temp
     
-    queue.put(Proj_list)
+    queue.put([Stationlist,Proj_list])
 
 def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,queue):
     Stationcol=[]
@@ -369,13 +369,15 @@ if __name__=='__main__':
 
     fetchlist=[]
     p=[]
+    jsonout=[]
 
     for k in range(REQUEST_THREADS):
             p.append(Process(target = detail_fetchv2,args=(login_arr[k],Stationlist[k],station_fetch,headers,q1)))
             p[k].start()
     for k in range(REQUEST_THREADS):
         Req_out=q1.get()
-        fetchlist=fetchlist+Req_out
+        fetchlist=fetchlist+Req_out[1]
+        jsonout=jsonout+Req_out[1]
 
     print(f"{bcolors.OKGREEN}RECIEVED{bcolors.ENDC}\n")
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Filtering for incomplete data and Stripend Constraints")
