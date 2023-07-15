@@ -377,7 +377,7 @@ if __name__=='__main__':
     for k in range(REQUEST_THREADS):
         Req_out=q1.get()
         fetchlist=fetchlist+Req_out[1]
-        jsonout=jsonout+Req_out[1]
+        jsonout=jsonout+Req_out[0]
 
     print(f"{bcolors.OKGREEN}RECIEVED{bcolors.ENDC}\n")
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Filtering for incomplete data and Stripend Constraints")
