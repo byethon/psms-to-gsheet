@@ -18,7 +18,9 @@ except:
         myfile.write("RETRY_PY=1")
     print("All required modules not available on this machine")
     print("Fatal Error: The program will now quit!")
-    exit("Retrying...")
+    print("Retrying...")
+    time.sleep(2)
+    exit()
 
 REQUEST_THREADS=8 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
 RETRY_COUNT=5
