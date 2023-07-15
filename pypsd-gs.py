@@ -22,7 +22,7 @@ except:
     time.sleep(2)
     exit()
 
-REQUEST_THREADS=8 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
+REQUEST_THREADS=32 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
 RETRY_COUNT=5
 
 class bcolors:
@@ -41,7 +41,26 @@ try:
 except:
     exit(f"{bcolors.FAIL}Input Email and Password as Environment Variables{bcolors.ENDC}")
 
+def put_login_queue(queue):
+    queue.put(gen_login_session())
+
+def gen_login_multi(Login_threads):
+    session_list=[]
+    q1=Queue()
+    p=[]
+    for k in range(Login_threads):
+            p.append(Process(target = put_login_queue,args=(q1, )))
+            p[k].start()
+    for k in range(Login_threads):
+        Req_out=q1.get()
+        session_list.append(Req_out)
+    for k in range(Login_threads):
+        p[k].join()
+    q1.close()
+    return session_list
+
 def gen_login_session():
+    url='http://psd.bits-pilani.ac.in/Login.aspx'
     ps=requests.Session()
     resp_get=ps.get(url)
     outhtml = resp_get.text.splitlines()
@@ -259,8 +278,6 @@ if __name__=='__main__':
 
     f=open('debug','w')
 
-    url='http://psd.bits-pilani.ac.in/Login.aspx'
-
     resp_url=f'http://psd.bits-pilani.ac.in/Student/NEWStudentDashboard.aspx?StudentId={studentid}'
 
     resp_url2='http://psd.bits-pilani.ac.in/Student/StudentStationPreference.aspx'
@@ -357,8 +374,8 @@ if __name__=='__main__':
 
     login_arr=[]
     login_arr.append(ps)
-    for k in range(REQUEST_THREADS-1):
-        login_arr.append(gen_login_session())
+    login_arr.extend(gen_login_multi(REQUEST_THREADS-1))
+    print(len(login_arr))
 
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
 
@@ -380,6 +397,9 @@ if __name__=='__main__':
         Req_out=q1.get()
         fetchlist=fetchlist+Req_out[1]
         jsonout=jsonout+Req_out[0]
+    
+    for k in range(REQUEST_THREADS):
+        p[k].join()
 
     print(f"{bcolors.OKGREEN}RECIEVED{bcolors.ENDC}\n")
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Filtering for incomplete data and Stripend Constraints")
@@ -440,7 +460,6 @@ if __name__=='__main__':
 
     payload4={"batchid": "undefined"}
 
-    q1=Queue()
     Stationlist=[]
     Proj_list=[]
     for k in range(REQUEST_THREADS):
@@ -465,6 +484,12 @@ if __name__=='__main__':
         TotalReqcol=TotalReqcol+Req_out[6]
         Stripcol=Stripcol+Req_out[7]
         Linkcol=Linkcol+Req_out[8]
+    
+    ps.close()
+    for k in range(REQUEST_THREADS):
+        p[k].join()
+        login_arr[k].close()
+    q1.close()
 
     dataset = {
     'Station': Stationcol,
