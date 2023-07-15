@@ -13,8 +13,6 @@ try:
     import pandas as pd
     import aiohttp
     import asyncio
-    with open(env_file, "a") as myfile:
-    myfile.write("RETRY_PY=0")
 except:
     with open(env_file, "a") as myfile:
     myfile.write("RETRY_PY=1")
