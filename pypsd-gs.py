@@ -46,16 +46,18 @@ def put_login_queue(queue):
 
 def gen_login_multi(Login_threads):
     session_list=[]
-    q1=Queue()
+    q1=[]
     p=[]
     for k in range(Login_threads):
             p.append(Process(target = put_login_queue,args=(q1, )))
             p[k].start()
     for k in range(Login_threads):
+        p[k].join()
+    if(len(q1) != Login_threads):
+        exit(f"LOGINS got {len(q1)} expected {Login_threads}")
+    while not q1.empty():
         Req_out=q1.get()
         session_list.append(Req_out)
-    for k in range(Login_threads):
-        p[k].join()
     q1.close()
     return session_list
 
@@ -374,8 +376,7 @@ if __name__=='__main__':
 
     login_arr=[]
     login_arr.append(ps)
-    login_arr.extend(gen_login_multi(REQUEST_THREADS-1))
-    print(len(login_arr))
+    login_resp=gen_login_multi(REQUEST_THREADS-1)
 
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
 
@@ -394,12 +395,17 @@ if __name__=='__main__':
             p.append(Process(target = detail_fetchv2,args=(login_arr[k],Stationlist[k],station_fetch,headers,q1)))
             p[k].start()
     for k in range(REQUEST_THREADS):
+        p[k].join()
+    if(len(q1) != REQUEST_THREADS):
+        exit(f"Data Fetch got {len(q1)} expected {REQUEST_THREADS}")
+    while not q1.empty():
         Req_out=q1.get()
         fetchlist=fetchlist+Req_out[1]
         jsonout=jsonout+Req_out[0]
+    q1.close()
+
     
-    for k in range(REQUEST_THREADS):
-        p[k].join()
+    
 
     print(f"{bcolors.OKGREEN}RECIEVED{bcolors.ENDC}\n")
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Filtering for incomplete data and Stripend Constraints")
@@ -474,6 +480,12 @@ if __name__=='__main__':
             p.append(Process(target = proj_fetch,args=(login_arr[k],Stationlist[k],Proj_list[k],pb_details,headers,payload4,q1)))
             p[k].start()
     for k in range(REQUEST_THREADS):
+        p[k].join()
+        login_arr[k].close()
+    ps.close()
+    if(len(q1) != REQUEST_THREADS):
+        exit(f"Proj Fetch got {len(q1)} expected {REQUEST_THREADS}")
+    while not q1.empty():
         Req_out=q1.get()
         Stationcol=Stationcol+Req_out[0]
         Domcol=Domcol+Req_out[1]
@@ -484,11 +496,6 @@ if __name__=='__main__':
         TotalReqcol=TotalReqcol+Req_out[6]
         Stripcol=Stripcol+Req_out[7]
         Linkcol=Linkcol+Req_out[8]
-    
-    ps.close()
-    for k in range(REQUEST_THREADS):
-        p[k].join()
-        login_arr[k].close()
     q1.close()
 
     dataset = {
