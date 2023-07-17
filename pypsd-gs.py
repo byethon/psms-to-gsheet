@@ -53,11 +53,11 @@ def gen_login_multi(Login_threads):
             p[k].start()
     for k in range(Login_threads):
         p[k].join()
-    if(len(q1) != Login_threads):
-        exit(f"LOGINS got {len(q1)} expected {Login_threads}")
     while not q1.empty():
         Req_out=q1.get()
         session_list.append(Req_out)
+    if(len(session_list) != Login_threads):
+        exit(f"LOGINS got {len(session_list)} expected {Login_threads}")
     q1.close()
     return session_list
 
@@ -396,12 +396,14 @@ if __name__=='__main__':
             p[k].start()
     for k in range(REQUEST_THREADS):
         p[k].join()
-    if(len(q1) != REQUEST_THREADS):
-        exit(f"Data Fetch got {len(q1)} expected {REQUEST_THREADS}")
+    recv_data_list=0
     while not q1.empty():
         Req_out=q1.get()
         fetchlist=fetchlist+Req_out[1]
         jsonout=jsonout+Req_out[0]
+        recv_data_list+=1
+    if(recv_data_list != REQUEST_THREADS):
+        exit(f"Data Fetch got {recv_data_list} expected {REQUEST_THREADS}")
     q1.close()
 
     
@@ -483,8 +485,7 @@ if __name__=='__main__':
         p[k].join()
         login_arr[k].close()
     ps.close()
-    if(len(q1) != REQUEST_THREADS):
-        exit(f"Proj Fetch got {len(q1)} expected {REQUEST_THREADS}")
+    recv_proj_list=0
     while not q1.empty():
         Req_out=q1.get()
         Stationcol=Stationcol+Req_out[0]
@@ -496,6 +497,9 @@ if __name__=='__main__':
         TotalReqcol=TotalReqcol+Req_out[6]
         Stripcol=Stripcol+Req_out[7]
         Linkcol=Linkcol+Req_out[8]
+        recv_proj_list+=1
+    if(recv_proj_list != REQUEST_THREADS):
+        exit(f"Proj Fetch got {recv_proj_list} expected {REQUEST_THREADS}")
     q1.close()
 
     dataset = {
