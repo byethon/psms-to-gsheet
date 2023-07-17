@@ -46,7 +46,7 @@ def put_login_queue(queue):
 
 def gen_login_multi(Login_threads):
     session_list=[]
-    q1=[]
+    q1=Queue()
     p=[]
     for k in range(Login_threads):
             p.append(Process(target = put_login_queue,args=(q1, )))
