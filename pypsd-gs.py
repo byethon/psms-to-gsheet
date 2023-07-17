@@ -416,7 +416,10 @@ if __name__=='__main__':
 
     login_arr=[]
     login_arr.append(ps)
+    ps.close()
     login_arr.extend(gen_login_multi(REQUEST_THREADS-1))
+    if(not login_test(login_arr[0])):
+        login_arr.pop(0)
     REQUEST_THREADS=len(login_arr)
 
     if(REQUEST_THREADS == 0):
@@ -526,7 +529,6 @@ if __name__=='__main__':
         Stripcol=Stripcol+Req_out[7]
         Linkcol=Linkcol+Req_out[8]
     
-    ps.close()
     for k in range(REQUEST_THREADS):
         p[k].join()
         login_arr[k].close()
