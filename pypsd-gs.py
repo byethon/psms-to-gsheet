@@ -22,8 +22,9 @@ except:
     time.sleep(2)
     exit()
 
-REQUEST_THREADS=32 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
+REQUEST_THREADS=36 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
 RETRY_COUNT=5
+studentid=0
 
 class bcolors:
     HEADER = '\033[95m'
@@ -52,14 +53,28 @@ def gen_login_multi(Login_threads):
             p.append(Process(target = put_login_queue,args=(q1, )))
             p[k].start()
     for k in range(Login_threads):
-        p[k].join()
-    while not q1.empty():
         Req_out=q1.get()
-        session_list.append(Req_out)
-    if(len(session_list) != Login_threads):
-        exit(f"LOGINS got {len(session_list)} expected {Login_threads}")
+        if(Req_out[0] != None):
+            session_list.append(Req_out[1])
+    for k in range(Login_threads):
+        p[k]=Process(target=keep_valid_logins,args=(k,session_list[k],q1))
+        p[k].start()
+    for k in range(Login_threads):
+        p[k].join()
+    rem_session=[]
+    while not q1.empty():
+        rem_session.append(q1.get())
+    rem_session=rem_session.sort(reverse=True)
+    if rem_session:
+        for entry in rem_session:
+            session_list.pop(entry)
     q1.close()
     return session_list
+
+def keep_valid_logins(k,requests_session,q1):
+    if(not login_test(requests_session)):
+        q1.put(k)
+
 
 def gen_login_session():
     url='http://psd.bits-pilani.ac.in/Login.aspx'
@@ -112,10 +127,20 @@ def gen_login_session():
         for entry in studentid:
             if (entry[-16:-7]=='StudentId'):
                 studentid=entry[-6:-1]
-        print(f"{bcolors.OKGREEN}SUCCESS{bcolors.ENDC}\n")
+        print(f"{bcolors.OKGREEN}Getting Student ID and Logging in...{bcolors.ENDC}\n")
     except:
         print("Login Error")
-    return ps
+        return [0,None]
+    return [studentid,ps]
+
+def login_test(requests_session):
+    resp_url=f'http://psd.bits-pilani.ac.in/Student/NEWStudentDashboard.aspx?StudentId={studentid}'
+    if(requests_session.head(resp_url).status_code==200):
+        print(f"{bcolors.OKGREEN}Login Valid{bcolors.ENDC}")
+        return 1
+    else:
+        print(f"{bcolors.FAIL}Login Invalid{bcolors.ENDC}")
+        return 0
 
 def token_gen():
     curr_millis=int(time.time()*1000)
@@ -146,7 +171,19 @@ def detail_fetchv2(requests_session,Stationlist,url,headers,queue):
     cookies=requests_session.cookies.get_dict()
     Proj_list=[]
     resp_list=[]
-    asyncio.run(detail_collector(cookies,url+'/getPBPOPUP',headers,Stationlist,resp_list))
+    Errorcount=0
+    while(Errorcount>=0 and Errorcount<RETRY_COUNT):
+        try:
+            asyncio.run(detail_collector(cookies,url+'/getPBPOPUP',headers,Stationlist,resp_list))
+            Errorcount=-1
+        except:
+            print(f"{bcolors.FAIL}>{bcolors.ENDC}Error Encountered Retrieving data")
+            Errorcount+=1
+            if(Errorcount<RETRY_COUNT):
+                print("Retrying...")
+    if(Errorcount>=RETRY_COUNT):
+        queue.put([[],[]])
+        exit("Too many errors recieving data")
     for j in range(len(resp_list)):
         Proj_list.append(re.sub('\\\\"','',resp_list[j][8:-4]))
         Proj_list[-1]=Proj_list[-1].split('},{')
@@ -193,6 +230,36 @@ def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,q
                 try:
                     post_req=request_session.head(uri)
                     post_req=request_session.post(fetch_url+'/ViewPB',headers=headers,json=payload)
+                    print(f'{bcolors.INFOYELLOW}>{bcolors.ENDC}{Sdomain.rstrip()}-{StationName}')
+                    pbout=post_req.text[8:-3]
+                    pbout=pbout.split('},{')
+                    totalinterns=0
+                    last_updated=''
+                    added_on=''
+                    for k in range(len(pbout)):
+                        pbout[k]=re.sub('\\\\"','',pbout[k])
+                        pbout[k]=re.sub('\\\\\\\\u0026','&',pbout[k])
+                        pbout[k]=pbout[k].split(',')
+                        temp=[]
+                        for subentry in pbout[k]:
+                            temprep=subentry.split(':',1)
+                            if len(temprep)>1:
+                                temp.append(temprep[1].rstrip())
+                            else:
+                                temp[-1]=temp[-1]+','+subentry.rstrip()
+                        pbout[k]=temp
+                        totalinterns=totalinterns+int(pbout[k][1])
+                        pbout[k][-4]=datetime.datetime.strptime(pbout[k][-4], '%b  %d %Y  %H:%M%p')
+                        if(k==0 or pbout[k][-4]>last_updated):
+                            last_updated=pbout[k][-4]
+                        if(k==0 or pbout[k][-4]<added_on):
+                            added_on=pbout[k][-4]
+                    Lupdcol.append(last_updated)
+                    Addcol.append(added_on)
+                    Eligcol.append(Proj_list[i][j][-6])
+                    TotalReqcol.append(totalinterns)
+                    Stripcol.append(Proj_list[i][j][-5])
+                    Linkcol.append(f'=HYPERLINK("{uri}","View Details")')
                     Errorcount=-1
                 except:
                     print(f"{bcolors.FAIL}>{bcolors.ENDC}Error Encountered Retrieving data for {Sdomain.rstrip()}-{StationName}")
@@ -202,36 +269,7 @@ def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,q
             if(Errorcount>=RETRY_COUNT):
                 print(f"{bcolors.FAIL}>{bcolors.ENDC}Error Encountered Retrieving data for Station {Sdomain.rstrip()}-{StationName}, Skipping")
                 break
-            print(f'{bcolors.INFOYELLOW}>{bcolors.ENDC}{Sdomain.rstrip()}-{StationName}')
-            pbout=post_req.text[8:-3]
-            pbout=pbout.split('},{')
-            totalinterns=0
-            last_updated=''
-            added_on=''
-            for k in range(len(pbout)):
-                pbout[k]=re.sub('\\\\"','',pbout[k])
-                pbout[k]=re.sub('\\\\\\\\u0026','&',pbout[k])
-                pbout[k]=pbout[k].split(',')
-                temp=[]
-                for subentry in pbout[k]:
-                    temprep=subentry.split(':',1)
-                    if len(temprep)>1:
-                        temp.append(temprep[1].rstrip())
-                    else:
-                        temp[-1]=temp[-1]+','+subentry.rstrip()
-                pbout[k]=temp
-                totalinterns=totalinterns+int(pbout[k][1])
-                pbout[k][-4]=datetime.datetime.strptime(pbout[k][-4], '%b  %d %Y  %H:%M%p')
-                if(k==0 or pbout[k][-4]>last_updated):
-                    last_updated=pbout[k][-4]
-                if(k==0 or pbout[k][-4]<added_on):
-                    added_on=pbout[k][-4]
-            Lupdcol.append(last_updated)
-            Addcol.append(added_on)
-            Eligcol.append(Proj_list[i][j][-6])
-            TotalReqcol.append(totalinterns)
-            Stripcol.append(Proj_list[i][j][-5])
-            Linkcol.append(f'=HYPERLINK("{uri}","View Details")')
+            
     queue.put([Stationcol,Domcol,Loccol,Lupdcol,Addcol,Eligcol,TotalReqcol,Stripcol,Linkcol])
 
 
@@ -269,8 +307,6 @@ if __name__=='__main__':
 
     wb = client.open_by_url(sheetlink)
 
-    studentid=0
-
     projectlist=''           #'2023-2024 / SEM-I' #project list for which data will be fetched. Entire history is sent by the server thus has to be filtered
 
     if (platform()[0:7]=="Windows"):
@@ -281,6 +317,7 @@ if __name__=='__main__':
     f=open('debug','w')
 
     resp_url=f'http://psd.bits-pilani.ac.in/Student/NEWStudentDashboard.aspx?StudentId={studentid}'
+
 
     resp_url2='http://psd.bits-pilani.ac.in/Student/StudentStationPreference.aspx'
 
@@ -305,11 +342,14 @@ if __name__=='__main__':
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Logging in...")
     wb.sheet1.update([['Logging in Please Wait...']])
     
-    ps=gen_login_session()
+    [studentid,ps]=gen_login_session()
+    
+    if(ps == None):
+        exit("Login Failed")
 
-    get_req=ps.get(resp_url)
+    get_req=ps.head(resp_url)
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Getting Dashboard...")
-    get_req=ps.get(resp_url2)
+    get_req=ps.head(resp_url2)
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Getting Station List....")
     wb.sheet1.update([['Getting Station List...']])
     post_req=ps.post(resp_url2+'/getinfoStation',headers=headers,json=payload2)
@@ -376,7 +416,11 @@ if __name__=='__main__':
 
     login_arr=[]
     login_arr.append(ps)
-    login_resp=gen_login_multi(REQUEST_THREADS-1)
+    login_arr.extend(gen_login_multi(REQUEST_THREADS-1))
+    REQUEST_THREADS=len(login_arr)
+
+    if(REQUEST_THREADS == 0):
+        exit("Login Unsuccessful")
 
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
 
@@ -395,19 +439,9 @@ if __name__=='__main__':
             p.append(Process(target = detail_fetchv2,args=(login_arr[k],Stationlist[k],station_fetch,headers,q1)))
             p[k].start()
     for k in range(REQUEST_THREADS):
-        p[k].join()
-    recv_data_list=0
-    while not q1.empty():
         Req_out=q1.get()
         fetchlist=fetchlist+Req_out[1]
         jsonout=jsonout+Req_out[0]
-        recv_data_list+=1
-    if(recv_data_list != REQUEST_THREADS):
-        exit(f"Data Fetch got {recv_data_list} expected {REQUEST_THREADS}")
-    q1.close()
-
-    
-    
 
     print(f"{bcolors.OKGREEN}RECIEVED{bcolors.ENDC}\n")
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Filtering for incomplete data and Stripend Constraints")
@@ -477,16 +511,10 @@ if __name__=='__main__':
         Stationlist[z%REQUEST_THREADS].append(jsonout[z])
         Proj_list[z%REQUEST_THREADS].append(fetchlist[z])
 
-    p=[]
     for k in range(REQUEST_THREADS):
-            p.append(Process(target = proj_fetch,args=(login_arr[k],Stationlist[k],Proj_list[k],pb_details,headers,payload4,q1)))
+            p[k]=Process(target = proj_fetch,args=(login_arr[k],Stationlist[k],Proj_list[k],pb_details,headers,payload4,q1))
             p[k].start()
     for k in range(REQUEST_THREADS):
-        p[k].join()
-        login_arr[k].close()
-    ps.close()
-    recv_proj_list=0
-    while not q1.empty():
         Req_out=q1.get()
         Stationcol=Stationcol+Req_out[0]
         Domcol=Domcol+Req_out[1]
@@ -497,9 +525,11 @@ if __name__=='__main__':
         TotalReqcol=TotalReqcol+Req_out[6]
         Stripcol=Stripcol+Req_out[7]
         Linkcol=Linkcol+Req_out[8]
-        recv_proj_list+=1
-    if(recv_proj_list != REQUEST_THREADS):
-        exit(f"Proj Fetch got {recv_proj_list} expected {REQUEST_THREADS}")
+    
+    ps.close()
+    for k in range(REQUEST_THREADS):
+        p[k].join()
+        login_arr[k].close()
     q1.close()
 
     dataset = {
