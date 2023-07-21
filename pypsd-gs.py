@@ -487,7 +487,14 @@ if __name__=='__main__':
         except:
             [Sdomain,StationName]=['-',jsonout[i][2]]
         for j in range(len(fetchlist[i])):
-            urlmask=f'http://psd.bits-pilani.ac.in/Student/StationproblemBankDetails.aspx?CompanyId={jsonout[i][-1]}&StationId={jsonout[i][-2]}&BatchIdFor={fetchlist[i][j][2]}&PSTypeFor={fetchlist[i][j][3]}'
+            try:
+                urlmask=f'http://psd.bits-pilani.ac.in/Student/StationproblemBankDetails.aspx?CompanyId={jsonout[i][-1]}&StationId={jsonout[i][-2]}&BatchIdFor={fetchlist[i][j][2]}&PSTypeFor={fetchlist[i][j][3]}'
+            except:
+                print(jsonout[i])
+                print(fetchlist[i])
+                print(fetchlist[i][j])
+                time.sleep(2)
+                exit("Check recieved response")
             fetchlist[i][j].append(urlmask)
 
     Stationcol=[]
