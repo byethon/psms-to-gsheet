@@ -16,7 +16,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11' # install the python version needed
+          python-version: '3.11.4' # install the python version needed
           
       - name: Execute py script # run main.py
         env:
