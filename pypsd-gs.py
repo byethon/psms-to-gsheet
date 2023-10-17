@@ -13,6 +13,7 @@ try:
     import pandas as pd
     import aiohttp
     import asyncio
+    import cryptpandas as crp
 except:
     with open(env_file, "a") as myfile:
         myfile.write("RETRY_PY=1")
@@ -21,6 +22,8 @@ except:
     print("Retrying...")
     time.sleep(2)
     exit()
+
+Ignore_datastore=False
 
 REQUEST_THREADS=36 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
 RETRY_COUNT=5
@@ -201,10 +204,12 @@ def detail_fetchv2(requests_session,Stationlist,url,headers,queue):
     queue.put([Stationlist,Proj_list])
 
 def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,queue):
+    Failcount=0
     Stationcol=[]
     Domcol=[]
     Loccol=[]
     Lupdcol=[]
+    Semcol=[]
     Addcol=[]
     Eligcol=[]
     TotalReqcol=[]
@@ -224,6 +229,7 @@ def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,q
         Domcol.append(Sdomain)
         for j in range(len(Proj_list[i])):
             uri=Proj_list[i][j][-1]
+            sem_eligible=Proj_list[i][j][1].strip()
             headers.update({'Referer': uri})
             Errorcount=0
             while(Errorcount>=0 and Errorcount<RETRY_COUNT):
@@ -255,6 +261,7 @@ def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,q
                         if(k==0 or pbout[k][-4]<added_on):
                             added_on=pbout[k][-4]
                     Lupdcol.append(last_updated)
+                    Semcol.append(sem_eligible)
                     Addcol.append(added_on)
                     Eligcol.append(Proj_list[i][j][-6])
                     TotalReqcol.append(totalinterns)
@@ -268,11 +275,14 @@ def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,q
                         print("Retrying...")
             if(Errorcount>=RETRY_COUNT):
                 print(f"{bcolors.FAIL}>{bcolors.ENDC}Error Encountered Retrieving data for Station {Sdomain.rstrip()}-{StationName}, Skipping")
+                Loccol.pop(-1)
+                Stationcol.pop(-1)
+                Domcol.pop(-1)
+                Failcount+=1
                 break
             
-    queue.put([Stationcol,Domcol,Loccol,Lupdcol,Addcol,Eligcol,TotalReqcol,Stripcol,Linkcol])
-
-
+    queue.put([Stationcol,Domcol,Loccol,Lupdcol,Semcol,Addcol,Eligcol,TotalReqcol,Stripcol,Linkcol,Failcount])
+    
 if __name__=='__main__':
     set_start_method("spawn")
 
@@ -501,11 +511,13 @@ if __name__=='__main__':
     Domcol=[]
     Loccol=[]
     Lupdcol=[]
+    Semcol=[]
     Addcol=[]
     Eligcol=[]
     TotalReqcol=[]
     Stripcol=[]
     Linkcol=[]
+    Failcount=0
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching Project Sublists and Generating Output")
     print(f"{bcolors.OKBLUE}>{bcolors.ENDC}Fetching data....")
     wb.sheet1.update([['Fetching Project details and Generating Output...']])
@@ -530,11 +542,13 @@ if __name__=='__main__':
         Domcol=Domcol+Req_out[1]
         Loccol=Loccol+Req_out[2]
         Lupdcol=Lupdcol+Req_out[3]
-        Addcol=Addcol+Req_out[4]
-        Eligcol=Eligcol+Req_out[5]
-        TotalReqcol=TotalReqcol+Req_out[6]
-        Stripcol=Stripcol+Req_out[7]
-        Linkcol=Linkcol+Req_out[8]
+        Semcol=Semcol+Req_out[4]
+        Addcol=Addcol+Req_out[5]
+        Eligcol=Eligcol+Req_out[6]
+        TotalReqcol=TotalReqcol+Req_out[7]
+        Stripcol=Stripcol+Req_out[8]
+        Linkcol=Linkcol+Req_out[9]
+        Failcount=Failcount+int(Req_out[10])
     
     for k in range(REQUEST_THREADS):
         p[k].join()
@@ -545,28 +559,45 @@ if __name__=='__main__':
     'Station': Stationcol,
     'Location': Loccol,
     'Domain': Domcol,
-    'Company Added on':Addcol,
+    'For Semester':Semcol,
     'Last updated on':Lupdcol,
     'Eligibility':Eligcol,
     'Total Req. Interns':TotalReqcol,
     'Stripend':Stripcol,
     'Link':Linkcol
     }
+
     row_count=len(Stationcol)+3
     str_list = list(filter(None, wb.sheet1.col_values(1)))
     last_row=len(str_list)
     last_col='I'
     dataframe=pd.DataFrame(dataset)
+
+    if(Failcount>0 and not Ignore_datastore):
+        print(f"Error retrieving Station entry = {Failcount}")
+        print("Using earlier datastore for recovery")
+        try:
+            old_dataframe=crp.read_encrypted(path='datastore.crypt', password=psdpass)
+            dataframe=pd.concat([old_dataframe,dataframe]).drop_duplicates(subset=["Station"],keep='last').reset_index(drop=True)
+        except:
+            print("Old Datastore not availabe")
+    else:
+        print("Updating Datastore")
+        crp.to_encrypted(dataframe, password=psdpass, path='datastore.crypt')
+    
+    dataframe.to_html("data.html")
+
     dataframe.sort_values(by='Last updated on',ascending=False, inplace=True)
     dataframe.style.format({"Last updated on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
     dataframe['Last updated on']=dataframe['Last updated on'].dt.strftime('%b %d %Y %H:%M%p')
-    dataframe.style.format({"Company Added on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
-    dataframe['Company Added on']=dataframe['Company Added on'].dt.strftime('%b %d %Y %H:%M%p')
+    #dataframe.style.format({"Company Added on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
+    #dataframe['Company Added on']=dataframe['Company Added on'].dt.strftime('%b %d %Y %H:%M%p')
+
     if(last_row>row_count):
         wb.sheet1.batch_clear([f'A{row_count+1}:{last_col}{last_row}'])
     wb.sheet1.merge_cells("A1:I2",merge_type='MERGE_ROWS')
     wb.sheet1.format(f"A1:I2", {"textFormat": {"foregroundColor": {"red": 0.4,"green": 0.4,"blue": 0.4},'bold': True, 'underline': False}})
-    wb.sheet1.format("A3:I3",{'textFormat': {'bold': True}})
+    wb.sheet1.format("A3:I3",{"textFormat": {"foregroundColor": {"red": 0.0,"green": 0.0,"blue": 0.0},'bold': True}})
     wb.sheet1.update([['Writing Sheet Please Wait...']])
     wb.sheet1.freeze(rows=3)
     wb.sheet1.format(f"A4:A{row_count}", {"textFormat": {"foregroundColor": {"red": 0.6,"green": 0.0,"blue": 1.0},'bold': True}})
