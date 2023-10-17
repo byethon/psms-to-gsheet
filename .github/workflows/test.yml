@@ -40,7 +40,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git add -A
           git diff-index --quiet HEAD || (git commit -a -m "updated files" --allow-empty)
-      - if: ${{ env.RETRY_PY == '1' }}
+      - if: ${{ env.DSTORE_UPD == '1' || env.RETRY_PY == '1' }}
         name: push changes
         uses: ad-m/github-push-action@master
         with:
