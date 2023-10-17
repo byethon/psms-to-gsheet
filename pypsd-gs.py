@@ -605,8 +605,6 @@ if __name__=='__main__':
             except:
                 print("Skip GITHUB_ENV update")
             crp.to_encrypted(dataframe, password=psdpass, path='datastore.crypt')
-    
-    dataframe.to_html("data.html")
 
     dataframe.sort_values(by='Last updated on',ascending=False, inplace=True)
     dataframe.style.format({"Last updated on": lambda t: t.strftime("%b  %d %Y  %H:%M%p")})
