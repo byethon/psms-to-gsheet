@@ -34,7 +34,7 @@ jobs:
           python pypsd-gs.py
           if ${{ env.RETRY_PY == '1' }}; then pip install -r requirements.txt && python pypsd-gs.py; else echo "Initial Run Successful";fi
           
-      - if: ${{ env.RETRY_PY == '1' }}
+      - if: ${{ env.DSTORE_UPD == '1' || env.RETRY_PY == '1' }}
         name: commit files
         run: |
           git config --local user.email "action@github.com"
