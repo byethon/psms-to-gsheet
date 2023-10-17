@@ -582,7 +582,7 @@ if __name__=='__main__':
         print("Using earlier datastore for recovery")
         try:
             old_dataframe=crp.read_encrypted(path='datastore.crypt', password=psdpass)
-            dataframe=pd.concat([old_dataframe,dataframe]).drop_duplicates(subset=["Station"],keep='last').reset_index(drop=True)
+            dataframe=pd.concat([old_dataframe,dataframe]).drop_duplicates(subset=["Station","Location"],keep='last').reset_index(drop=True)
         except:
             print("Old Datastore not availabe")
     else:
