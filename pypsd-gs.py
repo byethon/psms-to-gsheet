@@ -582,8 +582,14 @@ if __name__=='__main__':
         except:
             print("Old Datastore not availabe")
     else:
-        old_dataframe=crp.read_encrypted(path='datastore.crypt', password=psdpass)
-        if(old_dataframe != dataframe):
+        try:
+            old_dataframe=crp.read_encrypted(path='datastore.crypt', password=psdpass)
+            if(old_dataframe != dataframe):
+                print("Updating Datastore")
+                with open(env_file, "a") as myfile:
+                    myfile.write("DSTORE_UPD=1")
+                crp.to_encrypted(dataframe, password=psdpass, path='datastore.crypt')
+        except:
             print("Updating Datastore")
             with open(env_file, "a") as myfile:
                 myfile.write("DSTORE_UPD=1")
