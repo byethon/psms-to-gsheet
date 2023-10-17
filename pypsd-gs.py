@@ -582,8 +582,12 @@ if __name__=='__main__':
         except:
             print("Old Datastore not availabe")
     else:
-        print("Updating Datastore")
-        crp.to_encrypted(dataframe, password=psdpass, path='datastore.crypt')
+        old_dataframe=crp.read_encrypted(path='datastore.crypt', password=psdpass)
+        if(old_dataframe != dataframe):
+            print("Updating Datastore")
+            with open(env_file, "a") as myfile:
+                myfile.write("DSTORE_UPD=1")
+            crp.to_encrypted(dataframe, password=psdpass, path='datastore.crypt')
     
     dataframe.to_html("data.html")
 
