@@ -1,3 +1,4 @@
+from queue import PriorityQueue
 from sys import exit
 import time
 import datetime
@@ -15,8 +16,11 @@ try:
     import asyncio
     import cryptpandas as crp
 except:
-    with open(env_file, "a") as myfile:
-        myfile.write("RETRY_PY=1")
+    try:
+        with open(env_file, "a") as myfile:
+            myfile.write("RETRY_PY=1")
+    except:
+        print("Skip GITHUB_ENV update")
     print("All required modules not available on this machine")
     print("Fatal Error: The program will now quit!")
     print("Retrying...")
@@ -584,15 +588,22 @@ if __name__=='__main__':
     else:
         try:
             old_dataframe=crp.read_encrypted(path='datastore.crypt', password=psdpass)
-            if(old_dataframe != dataframe):
+            diff_df=pd.concat([old_dataframe,dataframe]).drop_duplicates(keep=False)
+            if not diff_df.empty:
                 print("Updating Datastore")
-                with open(env_file, "a") as myfile:
-                    myfile.write("DSTORE_UPD=1")
+                try:
+                    with open(env_file, "a") as myfile:
+                        myfile.write("DSTORE_UPD=1")
+                except:
+                    print("Skip GITHUB_ENV update")
                 crp.to_encrypted(dataframe, password=psdpass, path='datastore.crypt')
         except:
             print("Updating Datastore")
-            with open(env_file, "a") as myfile:
-                myfile.write("DSTORE_UPD=1")
+            try:
+                with open(env_file, "a") as myfile:
+                    myfile.write("DSTORE_UPD=1")
+            except:
+                print("Skip GITHUB_ENV update")
             crp.to_encrypted(dataframe, password=psdpass, path='datastore.crypt')
     
     dataframe.to_html("data.html")
