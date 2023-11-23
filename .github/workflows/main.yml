@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: '3.11.4' # install the python version needed
           
-      - name: Execute py script # run main.py
+      - name: Execute psms-to-gsheet main-code # run main.py
         env:
           psdemail: ${{ secrets.PSDEMAIL }}
           psdpass: ${{ secrets.PSDPASS }}
@@ -34,15 +34,23 @@ jobs:
           python pypsd-gs.py
           if ${{ env.RETRY_PY == '1' }}; then pip install -r requirements.txt && python pypsd-gs.py; else echo "Initial Run Successful";fi
           
-      - if: ${{ env.DSTORE_UPD == '1' || env.RETRY_PY == '1' }}
-        name: commit files
+      - if: ${{ env.DSTORE_UPD == '1' && env.RETRY_PY != '1'}}
+        name: Commit Datastore Update
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add datastore.crypt
+          git add debug
+          git diff-index --quiet HEAD || (git commit -a -m "Datastore Updated" --allow-empty)
+      - if: ${{ env.RETRY_PY == '1' }}
+        name: Commit Update Everything
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add -A
-          git diff-index --quiet HEAD || (git commit -a -m "updated files" --allow-empty)
+          git diff-index --quiet HEAD || (git commit -a -m "Python Runtime Update" --allow-empty)
       - if: ${{ env.DSTORE_UPD == '1' || env.RETRY_PY == '1' }}
-        name: push changes
+        name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
