@@ -40,7 +40,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git add datastore.crypt
           git add debug
-          git diff-index --quiet HEAD || (git commit -a -m "Datastore Updated" --allow-empty)
+          git commit -m "Datastore Updated"
       - if: ${{ env.RETRY_PY == '1' }}
         name: Commit Update Everything
         run: |
