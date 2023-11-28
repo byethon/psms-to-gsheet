@@ -1,4 +1,3 @@
-from queue import PriorityQueue
 from sys import exit
 import time
 import datetime
@@ -28,7 +27,9 @@ except:
     exit()
 
 Ignore_datastore=False
-
+known_domains=['Electronics','Chemical','Finance and Mgmt','Health Care','Infrastructure','IT','Mechanical','Others','Computer Science'] #Valid Domains will update the domain column only if matched other wise will not try to separate the company name and domain from the listing.
+for i in range(len(known_domains)):
+    known_domains[i]=known_domains[i].lower().rstrip().replace(' ','') #To match all case and whitespaces just in case
 REQUEST_THREADS=36 #No. of threads from which to send server requests (More Threads are faster but performance saturates at some point and drops beyond it)
 RETRY_COUNT=5
 studentid=0
@@ -222,9 +223,19 @@ def proj_fetch(request_session,Stationlist,Proj_list,fetch_url,headers,payload,q
     for i in range(len(Stationlist)):
         try:
             [Sdomain,StationName]=Stationlist[i][2].split('-',1)
+            if Sdomain.lower().strip().replace(' ','') in known_domains:
+                [StationName,location]=StationName.rsplit(',',1)
+            else:
+                [Sdomain,StationName]=['-',Stationlist[i][2]]
+                [StationName,location]=StationName.rsplit(',',1)
+                domain_search=re.search(r'(?<![\w])(([nN][oO][nN])+[ -_]*([CcTt][oOEe][RrCc][EeHh]|IT)|([CcTt][oOEe][RrCc][EeHh]|IT|ESG))(?![\w])',StationName)
+                if domain_search.group(2):
+                    Sdomain=domain_search.group(2).upper()+'-'+domain_search.group(3).upper()
+                elif domain_search.group(1):    
+                    Sdomain=domain_search.group(1).upper()
         except:
             [Sdomain,StationName]=['-',Stationlist[i][2]]
-        [StationName,location]=StationName.rsplit(',',1)
+            [StationName,location]=StationName.rsplit(',',1)
         StationName=StationName.strip()
         Sdomain=Sdomain.strip()
         location=location.strip()
@@ -498,6 +509,10 @@ if __name__=='__main__':
     for i in range(len(jsonout)):
         try:
             [Sdomain,StationName]=jsonout[i][2].split('-',1)
+            if Sdomain.lower().strip().replace(' ','') in known_domains:
+                pass
+            else:
+                [Sdomain,StationName]=['-',jsonout[i][2]]
         except:
             [Sdomain,StationName]=['-',jsonout[i][2]]
         for j in range(len(fetchlist[i])):
@@ -631,4 +646,3 @@ if __name__=='__main__':
     curr_time=datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
     wb.sheet1.update([['=HYPERLINK("github.com/byethon/psms-to-gsheet","Sheet automatically updated using Github Actions + pypsd_bot(github.com/byethon/psms-to-gsheet)")']]+[[f'Sheet Last updated at {curr_time.strftime("%b %d %Y %H:%M%p")} next update at {(curr_time+datetime.timedelta(minutes=30)).strftime("%b %d %Y %H:%M%p")}']]+[dataframe.columns.values.tolist()] + dataframe.values.tolist(),value_input_option="USER_ENTERED")
     print("Program executed Successfuly")
-
